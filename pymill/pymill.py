@@ -690,6 +690,18 @@ class Pymill(object):
             params['payment'] = str(payment) 
         return self._api_call("https://api.paymill.de/v2/subscriptions/" + str(subscription_id), params, method="PUT", return_type=Subscription)
 
+    def migrate_subscription(self, subscription_id, offer):
+        """
+        Change the offer of a subscription.  The plan will be changed immediately. The next_capture_at will change to the current date (immediately). A refund will be given if due.
+        If the new amount is higher than the old one, a pro-rata charge will occur. The next charge date is immediate i.e. the current date. 
+        If the new amount is less then the old one, a pro-rata refund will occur.
+        """
+        params = {
+            'offer': str(offer),
+            'offer_change_type': str(2)
+        }‚
+        return self._api_call("https://api.paymill.de/v2/subscriptions/" + str(subscription_id), params, method="PUT", return_type=Subscription)
+
     def cancel_subscription_after_interval(self, subscription_id, cancel=True):
         """Cancels a subscription after its interval ends
         
