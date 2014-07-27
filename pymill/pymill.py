@@ -12,6 +12,10 @@ import requests
 logger = logging.getLogger(__name__)
 
 
+API_VERSION = "2.1"
+API_BASE_URL = "https://api.paymill.com/v" + API_VERSION
+
+
 class PaymillObject(object):
     """ABC for all Paymill data objects"""
 
@@ -287,11 +291,11 @@ class Pymill(object):
         self.session.auth = (privatekey, "")
         self.session.verify = False
 
-    def _api_call(self, url, params=None, method="GET", headers=None, parse_json=True, return_type=None):
+    def _api_call(self, url_path, params=None, method="GET", headers=None, parse_json=True, return_type=None):
         """Call an API method.
 
         :Parameters:
-         - `url` - The URL of the entity to post to.
+         - `url_path` - The URL path of the entity to post to.
          - `params` - a dictionary of parameters
          - `method` - The request type to be made. If parameters are passed, this will be ignored and treated as POST
          - `headers` - HTTP headers to be added to the request
@@ -303,7 +307,7 @@ class Pymill(object):
         request = {'GET': self.session.get, 'DELETE': self.session.delete, 'PUT': self.session.put, 'POST': self.session.post}[method]
         if len(params) > 0 and not method in ('DELETE', 'PUT'):
             request = self.session.post
-        response = request(url, params=params, headers=headers)
+        response = request(API_BASE_URL + url_path, params=params, headers=headers)
 
         if parse_json:
             if return_type is None:
@@ -332,7 +336,7 @@ class Pymill(object):
         :Returns:
             a dict with a member "data" containing a dict representing a debit card
         """
-        return self._api_call("https://api.paymill.com/v2/payments/", dict_without_none(code=str(code), account=str(account), holder=str(holder), type='debit', client=str(client)), return_type=Payment)
+        return self._api_call("/payments/", dict_without_none(code=str(code), account=str(account), holder=str(holder), type='debit', client=str(client)), return_type=Payment)
 
     def new_card(self, token, client=None):
         """Create a card from a given token.
@@ -344,7 +348,7 @@ class Pymill(object):
         :Returns:
             a dict with a member "data" containing a dict representing a card
         """
-        return self._api_call("https://api.paymill.com/v2/payments", dict_without_none(token=str(token), client=str(client)), return_type=Payment)
+        return self._api_call("/payments", dict_without_none(token=str(token), client=str(client)), return_type=Payment)
 
     def get_card(self, card_id):
         """Get the details of a card from its ID.
@@ -355,7 +359,7 @@ class Pymill(object):
         :Returns:
             a dict with a member "data" containing a dict representing a card
         """
-        return self._api_call("https://api.paymill.com/v2/payments/" + str(card_id), return_type=Payment)
+        return self._api_call("/payments/" + str(card_id), return_type=Payment)
 
     def get_cards(self):
         """List all stored cards.
@@ -363,7 +367,7 @@ class Pymill(object):
         :Returns:
             a dict with a member "data" which is an array of dicts, each representing a card
         """
-        return self._api_call("https://api.paymill.com/v2/payments/", return_type=Payment)
+        return self._api_call("/payments/", return_type=Payment)
 
     def delete_card(self, card_id):
         """Delete a stored card
@@ -371,7 +375,7 @@ class Pymill(object):
         :Parameters:
          - `card_id` - ID for the card to be deleted
         """
-        self._api_call("https://api.paymill.com/v2/payments/" + str(card_id), method="DELETE")
+        self._api_call("/payments/" + str(card_id), method="DELETE")
 
     def transact(self, amount=0, currency="eur", description=None, token=None, client=None, payment=None, preauth=None, code=None, account=None, holder=None):
         """Create a transaction (charge a card or account). You must provide an amount, and exactly one funding source.
@@ -413,7 +417,7 @@ class Pymill(object):
         else:
             return None
 
-        return self._api_call("https://api.paymill.com/v2/transactions/", parameters, return_type=Transaction)
+        return self._api_call("/transactions/", parameters, return_type=Transaction)
 
     def get_transaction(self, transaction_id):
         """Get details on a transaction.
@@ -424,7 +428,7 @@ class Pymill(object):
         :Returns:
             a dict representing a transaction
         """
-        return self._api_call("https://api.paymill.com/v2/transactions/" + str(transaction_id), return_type=Transaction)
+        return self._api_call("/transactions/" + str(transaction_id), return_type=Transaction)
 
     def get_transactions(self):
         """List all transactions.
@@ -432,7 +436,7 @@ class Pymill(object):
         :Returns:
             a dict with a member "data" which is an array of dicts, each representing a transaction
         """
-        return self._api_call("https://api.paymill.com/v2/transactions/", return_type=Transaction)
+        return self._api_call("/transactions/", return_type=Transaction)
 
     def refund(self, transaction_id, amount, description=None):
         """Refunds an already performed transaction.
@@ -448,7 +452,7 @@ class Pymill(object):
         if amount == 0:
             return None
 
-        return self._api_call("https://api.paymill.com/v2/refunds/" + str(transaction_id), dict_without_none(amount=str(amount), description=str(description)), return_type=Refund)
+        return self._api_call("/refunds/" + str(transaction_id), dict_without_none(amount=str(amount), description=str(description)), return_type=Refund)
 
     def get_refund(self, refund_id):
         """Get the details of a refund from its ID.
@@ -459,7 +463,7 @@ class Pymill(object):
         :Returns:
             a dict with a member "data" which is a dict representing a refund
         """
-        return self._api_call("https://api.paymill.com/v2/refunds/" + str(refund_id), return_type=Refund)
+        return self._api_call("/refunds/" + str(refund_id), return_type=Refund)
 
     def get_refunds(self):
         """List all stored refunds.
@@ -467,7 +471,7 @@ class Pymill(object):
         :Returns:
             a dict with a member "data" which is an array of dicts, each representing a refund
         """
-        return self._api_call("https://api.paymill.com/v2/refunds/", return_type=Refund)
+        return self._api_call("/refunds/", return_type=Refund)
 
     def preauthorize(self, amount=0, currency="eur", description=None, token=None, client=None, payment=None):
         """Preauthorize a transaction (reserve value a card). You must provide an amount, and exactly one funding source.
@@ -490,7 +494,7 @@ class Pymill(object):
         if (not payment is None) and (not token is None):
             return None
 
-        return self._api_call("https://api.paymill.com/v2/preauthorizations/", dict_without_none(amount=str(amount), currency=str(currency), payment=str(payment), token=str(token)), return_type=Preauthorization)
+        return self._api_call("/preauthorizations/", dict_without_none(amount=str(amount), currency=str(currency), payment=str(payment), token=str(token)), return_type=Preauthorization)
 
     def get_preauthorization(self, preauthorization_id):
         """Get details on a preauthorization.
@@ -501,7 +505,7 @@ class Pymill(object):
         :Returns:
             a dict representing a preauthorization
         """
-        return self._api_call("https://api.paymill.com/v2/preauthorizations/" + str(preauthorization_id), return_type=Preauthorization)
+        return self._api_call("/preauthorizations/" + str(preauthorization_id), return_type=Preauthorization)
 
     def get_preauthorizations(self):
         """List all preauthorizations.
@@ -509,7 +513,7 @@ class Pymill(object):
         :Returns:
             a dict with a member "data" which is an array of dicts, each representing a preauthorization
         """
-        return self._api_call("https://api.paymill.com/v2/preauthorizations/", return_type=Preauthorization)
+        return self._api_call("/preauthorizations/", return_type=Preauthorization)
 
     def new_client(self, email=None, description=None):
         """Creates a new client.
@@ -524,7 +528,7 @@ class Pymill(object):
         parameters = dict_without_none(description=unicode(description), email=str(email))
         if len(parameters) == 0:
             return None
-        return self._api_call("https://api.paymill.com/v2/clients", parameters, return_type=Client)
+        return self._api_call("/clients", parameters, return_type=Client)
 
     def get_client(self, client_id):
         """Get the details of a client from its ID.
@@ -535,7 +539,7 @@ class Pymill(object):
         :Returns:
             a dict with a member "data" which is a dict representing a client
         """
-        return self._api_call("https://api.paymill.com/v2/clients/" + str(client_id), return_type=Client)
+        return self._api_call("/clients/" + str(client_id), return_type=Client)
 
     def update_client(self, client_id, email, description=None):
         """Updates the details of a client.
@@ -551,7 +555,7 @@ class Pymill(object):
         parameters = dict_without_none(description=unicode(description), email=str(email))
         if len(parameters) == 0:
             return None
-        return self._api_call("https://api.paymill.com/v2/clients/" + str(client_id), parameters, method="PUT", return_type=Client)
+        return self._api_call("/clients/" + str(client_id), parameters, method="PUT", return_type=Client)
 
     def delete_client(self, client_id):
         """Delete a stored client
@@ -559,7 +563,7 @@ class Pymill(object):
         :Parameters:
          - `client_id` - ID of the client to be deleted
         """
-        return self._api_call("https://api.paymill.com/v2/clients/" + str(client_id), method="DELETE", return_type=Client)
+        return self._api_call("/clients/" + str(client_id), method="DELETE", return_type=Client)
 
     def get_clients(self):
         """List all stored clients.
@@ -567,7 +571,7 @@ class Pymill(object):
         :Returns:
             a dict with a member "data" which is an array of dicts, each representing a client
         """
-        return self._api_call("https://api.paymill.com/v2/clients/", return_type=Client)
+        return self._api_call("/clients/", return_type=Client)
 
     def export_clients(self):
         """Export all stored clients in CSV form
@@ -575,7 +579,7 @@ class Pymill(object):
         :Returns:
             the contents of the CSV file
         """
-        return self._api_call("https://api.paymill.com/v2/clients/", headers={"Accept": "text/csv"}, parse_json=False)
+        return self._api_call("/clients/", headers={"Accept": "text/csv"}, parse_json=False)
 
     def new_offer(self, amount, interval="month", currency="eur", name=None, trial_period_days=0):
         """Creates a new offer
@@ -604,7 +608,7 @@ class Pymill(object):
         if not re.findall(interval_re, interval):
             raise ValueError, "Format: number DAY|WEEK|MONTH|YEAR Example: 2 DAY"
 
-        return self._api_call("https://api.paymill.com/v2/offers", dict_without_none(amount=str(amount), currency=str(currency), interval=str(interval), name=unicode(name), trial_period_days=str(trial_period_days)), return_type=Offer)
+        return self._api_call("/offers", dict_without_none(amount=str(amount), currency=str(currency), interval=str(interval), name=unicode(name), trial_period_days=str(trial_period_days)), return_type=Offer)
 
     def get_offer(self, offer_id):
         """Get the details of an offer from its ID.
@@ -615,7 +619,7 @@ class Pymill(object):
         :Returns:
             a dict with a member "data" which is a dict representing an offer
         """
-        return self._api_call("https://api.paymill.com/v2/offers/" + str(offer_id), return_type=Offer)
+        return self._api_call("/offers/" + str(offer_id), return_type=Offer)
 
     def update_offer(self, offer_id, name):
         """Updates the details of an offer. Only the name may be changed
@@ -627,7 +631,7 @@ class Pymill(object):
         :Returns:
             a dict with a member "data" which is a dict representing an offer
         """
-        return self._api_call("https://api.paymill.com/v2/offers/" + str(offer_id), {'name': unicode(name)}, return_type=Offer)
+        return self._api_call("/offers/" + str(offer_id), {'name': unicode(name)}, return_type=Offer)
 
     def delete_offer(self, offer_id):
         """Delete a stored offer. May only be done if no subscriptions to this offer are active.
@@ -635,7 +639,7 @@ class Pymill(object):
         :Parameters:
          - `offer_id` - ID of the offer to be deleted
         """
-        self._api_call("https://api.paymill.com/v2/offers/" + str(offer_id), method="DELETE")
+        self._api_call("/offers/" + str(offer_id), method="DELETE")
 
     def get_offers(self):
         """List all stored offers.
@@ -643,7 +647,7 @@ class Pymill(object):
         :Returns:
             a dict with a member "data" which is an array of dicts, each representing an offer
         """
-        return self._api_call("https://api.paymill.com/v2/offers/", return_type=Offer)
+        return self._api_call("/offers/", return_type=Offer)
 
     def new_subscription(self, client, offer, payment, start_at=None):
         """Subscribes a client to an offer
@@ -661,7 +665,7 @@ class Pymill(object):
         if isinstance(real_start_at, datetime):
             real_start_at = time.mktime(real_start_at.timetuple())
         
-        return self._api_call("https://api.paymill.com/v2/subscriptions", dict_without_none(offer=str(offer), client=str(client), payment=str(payment), start_at=real_start_at), return_type=Subscription)
+        return self._api_call("/subscriptions", dict_without_none(offer=str(offer), client=str(client), payment=str(payment), start_at=real_start_at), return_type=Subscription)
 
     def get_subscription(self, subscription_id):
         """Get the details of a subscription from its id.
@@ -672,7 +676,7 @@ class Pymill(object):
         :Returns:
             a dict with a member "data" which is a dict representing a subscription
         """
-        return self._api_call("https://api.paymill.com/v2/subscriptions/" + str(subscription_id), return_type=Subscription)
+        return self._api_call("/subscriptions/" + str(subscription_id), return_type=Subscription)
 
     def update_subscription(self, subscription_id, offer, payment=None):
         """Change the offer that a subscription is attached to and the payment that is used for the subscription
@@ -688,7 +692,7 @@ class Pymill(object):
         params = {'offer': str(offer)}
         if payment: 
             params['payment'] = str(payment) 
-        return self._api_call("https://api.paymill.de/v2/subscriptions/" + str(subscription_id), params, method="PUT", return_type=Subscription)
+        return self._api_call("https://api.paymill.de/v" + API_VERSION + "/subscriptions/" + str(subscription_id), params, method="PUT", return_type=Subscription)
 
     def migrate_subscription(self, subscription_id, offer):
         """
@@ -700,7 +704,7 @@ class Pymill(object):
             'offer': str(offer),
             'offer_change_type': str(2)
         }
-        return self._api_call("https://api.paymill.de/v2/subscriptions/" + str(subscription_id), params, method="PUT", return_type=Subscription)
+        return self._api_call("https://api.paymill.de/v" + API_VERSION + "/subscriptions/" + str(subscription_id), params, method="PUT", return_type=Subscription)
 
     def cancel_subscription_after_interval(self, subscription_id, cancel=True):
         """Cancels a subscription after its interval ends
@@ -712,7 +716,7 @@ class Pymill(object):
         :Returns:
             a dict with a member "data" which is a dict representing a subscription
         """
-        return self._api_call("https://api.paymill.com/v2/subscriptions/" + str(subscription_id), {'cancel_at_period_end': "true" if cancel else "false"}, method="PUT", return_type=Subscription)
+        return self._api_call("/subscriptions/" + str(subscription_id), {'cancel_at_period_end': "true" if cancel else "false"}, method="PUT", return_type=Subscription)
 
     def cancel_subscription_now(self, subscription_id):
         """Cancel a subscription immediately. Pending transactions will still be charged.
@@ -720,7 +724,7 @@ class Pymill(object):
         :Parameters:
          - `subscription_id` - ID of the subscription
         """
-        return self._api_call("https://api.paymill.com/v2/subscriptions/" + str(subscription_id), method="DELETE", return_type=Subscription)
+        return self._api_call("/subscriptions/" + str(subscription_id), method="DELETE", return_type=Subscription)
 
     def get_subscriptions(self):
         """List all stored subscriptions.
@@ -728,7 +732,7 @@ class Pymill(object):
         :Returns:
             a dict with a member "data" which is an array of dicts, each representing a subscription
         """
-        return self._api_call("https://api.paymill.com/v2/subscriptions/", return_type=Subscription)
+        return self._api_call("/subscriptions/", return_type=Subscription)
 
     def new_webhook(self, url, event_types):
         """Create a webhook to react to an event
@@ -740,7 +744,7 @@ class Pymill(object):
         :Returns:
             a dict containing the webhook description
         """
-        return self._api_call("https://api.paymill.com/v2/webhooks", {'url': str(url), 'event_types[]': event_types}, return_type=Webhook)
+        return self._api_call("/webhooks", {'url': str(url), 'event_types[]': event_types}, return_type=Webhook)
 
     def delete_webhook(self, webhook_id):
         """Delete a webhook.
@@ -748,7 +752,7 @@ class Pymill(object):
         :Parameters:
          - `webhook_id` - the ID of the webhook to be deleted
         """
-        self._api_call("https://api.paymill.com/v2/webhooks/" + str(webhook_id), method="DELETE")
+        self._api_call("/webhooks/" + str(webhook_id), method="DELETE")
 
     def get_webhook(self, webhook_id):
         """Get the details of a webhook.
@@ -759,7 +763,7 @@ class Pymill(object):
         :Returns:
             a Webhook instance
         """
-        return self._api_call("https://api.paymill.com/v2/webhooks/" + str(webhook_id), return_type=Webhook)
+        return self._api_call("/webhooks/" + str(webhook_id), return_type=Webhook)
 
     def get_webhooks(self):
         """List all webhooks.
@@ -767,7 +771,7 @@ class Pymill(object):
         :Returns:
             a dict
         """
-        return self._api_call("https://api.paymill.com/v2/webhooks/", return_type=Webhook)
+        return self._api_call("/webhooks/", return_type=Webhook)
         
     def response_code2text(self, response_code):
         """Utility function to convert from response codes in some object to human readable text
