@@ -699,7 +699,7 @@ class Pymill(object):
         params = {
             'offer': str(offer),
             'offer_change_type': str(2)
-        }‚
+        }
         return self._api_call("https://api.paymill.de/v2/subscriptions/" + str(subscription_id), params, method="PUT", return_type=Subscription)
 
     def cancel_subscription_after_interval(self, subscription_id, cancel=True):
