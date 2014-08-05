@@ -12,8 +12,8 @@ import requests
 logger = logging.getLogger(__name__)
 
 
-API_VERSION = "2.1"
-API_BASE_URL = "https://api.paymill.com/v" + API_VERSION
+DEFAULT_API_VERSION = "2.1"
+API_BASE_URL = "https://api.paymill.com/"
 
 
 class PaymillObject(object):
@@ -291,7 +291,7 @@ class Pymill(object):
         self.session.auth = (privatekey, "")
         self.session.verify = False
 
-    def _api_call(self, url_path, params=None, method="GET", headers=None, parse_json=True, return_type=None):
+    def _api_call(self, url_path, params=None, method="GET", headers=None, parse_json=True, return_type=None, api_version=DEFAULT_API_VERSION):
         """Call an API method.
 
         :Parameters:
@@ -307,7 +307,7 @@ class Pymill(object):
         request = {'GET': self.session.get, 'DELETE': self.session.delete, 'PUT': self.session.put, 'POST': self.session.post}[method]
         if len(params) > 0 and not method in ('DELETE', 'PUT'):
             request = self.session.post
-        response = request(API_BASE_URL + url_path, params=params, headers=headers)
+        response = request(API_BASE_URL + "v" + api_version + url_path, params=params, headers=headers)
 
         if parse_json:
             if return_type is None:
@@ -716,7 +716,7 @@ class Pymill(object):
         :Returns:
             a dict with a member "data" which is a dict representing a subscription
         """
-        return self._api_call("/subscriptions/" + str(subscription_id), {'cancel_at_period_end': "true" if cancel else "false"}, method="PUT", return_type=Subscription)
+        return self._api_call("/subscriptions/" + str(subscription_id), {'cancel_at_period_end': "true" if cancel else "false"}, method="DELETE", return_type=Subscription, api_version="2")
 
     def cancel_subscription_now(self, subscription_id):
         """Cancel a subscription immediately. Pending transactions will still be charged.
