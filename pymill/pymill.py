@@ -726,6 +726,16 @@ class Pymill(object):
         """
         return self._api_call("/subscriptions/" + str(subscription_id), method="DELETE", return_type=Subscription)
 
+    def pause_subscription(self, subscription_id):
+        """Pause a subscription.
+        """
+        return self._api_call("/subscriptions/" + str(subscription_id), { 'pause': "true" }, method="PUT", return_type=Subscription)
+
+    def reactivate_subscription(self, subscription_id):
+        """Pause a subscription.
+        """
+        return self._api_call("/subscriptions/" + str(subscription_id), { 'pause': "false" }, method="PUT", return_type=Subscription)
+
     def get_subscriptions(self):
         """List all stored subscriptions.
 
