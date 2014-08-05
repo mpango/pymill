@@ -692,7 +692,7 @@ class Pymill(object):
         params = {'offer': str(offer)}
         if payment: 
             params['payment'] = str(payment) 
-        return self._api_call("https://api.paymill.de/v" + API_VERSION + "/subscriptions/" + str(subscription_id), params, method="PUT", return_type=Subscription)
+        return self._api_call("/subscriptions/" + str(subscription_id), params, method="PUT", return_type=Subscription)
 
     def migrate_subscription(self, subscription_id, offer):
         """
@@ -704,7 +704,7 @@ class Pymill(object):
             'offer': str(offer),
             'offer_change_type': str(2)
         }
-        return self._api_call("https://api.paymill.de/v" + API_VERSION + "/subscriptions/" + str(subscription_id), params, method="PUT", return_type=Subscription)
+        return self._api_call("/subscriptions/" + str(subscription_id), params, method="PUT", return_type=Subscription)
 
     def cancel_subscription_after_interval(self, subscription_id, cancel=True):
         """Cancels a subscription after its interval ends
@@ -716,7 +716,7 @@ class Pymill(object):
         :Returns:
             a dict with a member "data" which is a dict representing a subscription
         """
-        return self._api_call("/subscriptions/" + str(subscription_id), {'cancel_at_period_end': "true" if cancel else "false"}, method="DELETE", return_type=Subscription, api_version="2")
+        return self._api_call("/subscriptions/" + str(subscription_id), {'cancel_at_period_end': "true" if cancel else "false"}, method="PUT", return_type=Subscription, api_version="2")
 
     def cancel_subscription_now(self, subscription_id):
         """Cancel a subscription immediately. Pending transactions will still be charged.
