@@ -678,33 +678,29 @@ class Pymill(object):
         """
         return self._api_call("/subscriptions/" + str(subscription_id), return_type=Subscription)
 
-    def update_subscription(self, subscription_id, offer, payment=None):
+    def update_subscription(self, subscription_id, **kwargs):
         """Change the offer that a subscription is attached to and the payment that is used for the subscription
         
         :Parameters:
          - `subscription_id` - ID of the subscription
-         - `offer` - ID of the new offer
-         - `payment` - ID of the new payment (optional)
+
+         - payment (string) - Unique identifier describing a payment of the client
+         - amount (integer (>0)) - the amount of the subscription in cents (optional)
+         - amount_change_type (int) - permitted values: 0,1; linked and required with ‘amount’ (optional)
+         - pause (boolean) - deactivate a subscription or reactivate it, false: reactivate, true: deactivate (optional)
+         - currency (string) - ISO 4217 formatted currency code (optional)
+         - interval (string) - Defining how often the client should be charged. Format: number DAY|WEEK|MONTH|YEAR [, WEEKDAY] (optional)
+         - name (string) - name of the subscription (optional)
+         - period_of_validity (string) -  limit the validity of the subscription, format: integer MONTH|YEAR|WEEK|DAY, set to “remove” to unlimit the validity period (optional)
+         - trial_end (boolean) - set to false to stop the trial period immediatly (optional)
+         - offer (string) - Unique identifier describing the offer which is subscribed to the client
+         - offer_change_type (int or null) - permitted values: 0,1,2; linked and required with ‘offer’, default: 0 (optional)
+         - next_capture_at (integer) - Unix-Timestamp for the next charge.
 
         :Returns:
             a dict with a member "data" which represents the subscription
         """
-        params = {'offer': str(offer)}
-        if payment: 
-            params['payment'] = str(payment) 
-        return self._api_call("/subscriptions/" + str(subscription_id), params, method="PUT", return_type=Subscription)
-
-    def migrate_subscription(self, subscription_id, offer):
-        """
-        Change the offer of a subscription.  The plan will be changed immediately. The next_capture_at will change to the current date (immediately). A refund will be given if due.
-        If the new amount is higher than the old one, a pro-rata charge will occur. The next charge date is immediate i.e. the current date. 
-        If the new amount is less then the old one, a pro-rata refund will occur.
-        """
-        params = {
-            'offer': str(offer),
-            'offer_change_type': str(2)
-        }
-        return self._api_call("/subscriptions/" + str(subscription_id), params, method="PUT", return_type=Subscription)
+        return self._api_call("/subscriptions/" + str(subscription_id), kwargs, method="PUT", return_type=Subscription)
 
     def cancel_subscription_after_interval(self, subscription_id, cancel=True):
         """Cancels a subscription after its interval ends
