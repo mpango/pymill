@@ -672,7 +672,7 @@ class Pymill(object):
         if "start_at" in kwargs and isinstance(kwargs["start_at"], datetime):
             kwargs["start_at"] = time.mktime(kwargs["start_at"].timetuple())
         
-        return self._api_call("/subscriptions", dict_without_none(kwargs), return_type=Subscription)
+        return self._api_call("/subscriptions", kwargs, return_type=Subscription)
 
     def get_subscription(self, subscription_id):
         """Get the details of a subscription from its id.
