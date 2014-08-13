@@ -649,24 +649,31 @@ class Pymill(object):
         """
         return self._api_call("/offers/", return_type=Offer)
 
-    def new_subscription(self, client, offer, payment, start_at=None):
+   def new_subscription(self, client, offer, payment, **kwargs):
         """Subscribes a client to an offer
-        
-        :Parameters:
+         
+        :args:
          - `client` - The id of the client
          - `offer` - The id of the offer
          - `payment` - The id of the payment instrument used for this offer
+
+         :kwargs:
+         - `amount` (integer (>0)) - the amount of the subscription in cents (is required if no offer id is given)
+         - `currency` (string) - ISO 4217 formatted currency code (is required if no offer id is given)
+         - `interval` (string) - Defining how often the client should be charged. Format: number DAY|WEEK|MONTH|YEAR [, WEEKDAY] Example: 2 DAYS, MONDAY ( is required if no offer id is given)
+         - `name` (string or null) - name of the subscription (optional)
+         - `period_of_validity` (string or null) - limit the validity of the subscription, format: integer MONTH|YEAR|WEEK|DAY (optional)
+         - `start_at` (integer or null) - Unix-Timestamp for the subscription start date, if trial_end > start_at, the trial_end will be set to start_at (optional)
 
         :Returns:
             a dict with a member "data" which is a dict representing a subscription
         """
         # convert start_at to unixtime
-        real_start_at = start_at
-        if isinstance(real_start_at, datetime):
-            real_start_at = time.mktime(real_start_at.timetuple())
+        if isinstance(kwargs["start_at"], datetime):
+            kwargs["start_at"] = time.mktime(kwargs["start_at"].timetuple())
         
-        return self._api_call("/subscriptions", dict_without_none(offer=str(offer), client=str(client), payment=str(payment), start_at=real_start_at), return_type=Subscription)
-
+        return self._api_call("/subscriptions", dict_without_none(kwargs), return_type=Subscription)
+    
     def get_subscription(self, subscription_id):
         """Get the details of a subscription from its id.
         
