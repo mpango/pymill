@@ -669,7 +669,7 @@ class Pymill(object):
             a dict with a member "data" which is a dict representing a subscription
         """
         # convert start_at to unixtime
-        if isinstance(kwargs["start_at"], datetime):
+        if "start_at" in kwargs and isinstance(kwargs["start_at"], datetime):
             kwargs["start_at"] = time.mktime(kwargs["start_at"].timetuple())
         
         return self._api_call("/subscriptions", dict_without_none(kwargs), return_type=Subscription)
