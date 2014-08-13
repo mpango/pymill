@@ -649,7 +649,7 @@ class Pymill(object):
         """
         return self._api_call("/offers/", return_type=Offer)
 
-   def new_subscription(self, client, offer, payment, **kwargs):
+    def new_subscription(self, client, offer, payment, **kwargs):
         """Subscribes a client to an offer
          
         :args:
@@ -673,7 +673,7 @@ class Pymill(object):
             kwargs["start_at"] = time.mktime(kwargs["start_at"].timetuple())
         
         return self._api_call("/subscriptions", dict_without_none(kwargs), return_type=Subscription)
-    
+
     def get_subscription(self, subscription_id):
         """Get the details of a subscription from its id.
         
