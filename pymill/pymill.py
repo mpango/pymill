@@ -649,15 +649,14 @@ class Pymill(object):
         """
         return self._api_call("/offers/", return_type=Offer)
 
-    def new_subscription(self, client, offer, payment, **kwargs):
+    def new_subscription(self, **kwargs):
         """Subscribes a client to an offer
          
-        :args:
+        :kwargs:
          - `client` - The id of the client
          - `offer` - The id of the offer
          - `payment` - The id of the payment instrument used for this offer
-
-         :kwargs:
+         
          - `amount` (integer (>0)) - the amount of the subscription in cents (is required if no offer id is given)
          - `currency` (string) - ISO 4217 formatted currency code (is required if no offer id is given)
          - `interval` (string) - Defining how often the client should be charged. Format: number DAY|WEEK|MONTH|YEAR [, WEEKDAY] Example: 2 DAYS, MONDAY ( is required if no offer id is given)
