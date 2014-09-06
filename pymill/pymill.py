@@ -229,6 +229,9 @@ class Subscription(PaymillObject):
     cancel_at_period_end = None
     """true if subscription is to be cancelled at the end of current period, false if to be cancelled immediately"""
 
+    is_canceled = None
+    """Is it canceled?"""
+
     canceled_at = None
     """unix timestamp identifying time of cancellation(optional)"""
 
